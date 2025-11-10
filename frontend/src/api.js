@@ -1,14 +1,37 @@
-const API = (url = '') => {
-  const base = import.meta.env.VITE_API_BASE || 'http://localhost:4000';
-  return {
-    getProducts: () => fetch(`${base}/api/products`).then(r => r.json()),
-    getCart: () => fetch(`${base}/api/cart`).then(r => r.json()),
-    addToCart: (productId, qty = 1) =>
-      fetch(`${base}/api/cart`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ productId, qty })}).then(r => r.json()),
-    removeFromCart: (id) => fetch(`${base}/api/cart/${id}`, { method: 'DELETE' }).then(r => r.json()),
-    updateCartItem: (id, qty) => fetch(`${base}/api/cart/${id}`, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ qty })}).then(r => r.json()),
-    checkout: (cartItems, customer) => fetch(`${base}/api/checkout`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ cartItems, customer })}).then(r => r.json())
-  }
+const base =
+  import.meta.env.VITE_API_BASE ||
+  (import.meta.env.MODE === "production"
+    ? "https://mock-ecom-cart-kxvj.onrender.com"
+    : "http://localhost:4000");
+
+export const API_BASE = `${base}/api`;
+
+export async function fetchProducts() {
+  const res = await fetch(`${API_BASE}/products`);
+  if (!res.ok) throw new Error("Failed to fetch products");
+  return res.json();
 }
 
-export default API();
+export async function addToCart(productId) {
+  const res = await fetch(`${API_BASE}/cart`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ productId }),
+  });
+  if (!res.ok) throw new Error("Failed to add to cart");
+  return res.json();
+}
+
+export async function getCart() {
+  const res = await fetch(`${API_BASE}/cart`);
+  if (!res.ok) throw new Error("Failed to load cart");
+  return res.json();
+}
+
+export async function removeFromCart(productId) {
+  const res = await fetch(`${API_BASE}/cart/${productId}`, {
+    method: "DELETE",
+  });
+  if (!res.ok) throw new Error("Failed to remove item");
+  return res.json();
+}
