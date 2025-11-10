@@ -10,7 +10,7 @@ function App() {
 
   // Fetch products from backend
   useEffect(() => {
-   fetch("https://mock-ecom-cart-backend.onrender.com/api/products")
+  fetch("/api/products")
       .then((res) => res.json())
       .then((data) => {
         // Replace mock product names with unique ones
