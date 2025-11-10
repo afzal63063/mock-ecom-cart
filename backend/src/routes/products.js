@@ -1,12 +1,16 @@
 import express from "express";
-import fetch from "node-fetch";
+import { Product } from "../models/index.js"; // ✅ make sure Product is exported from your models/index.js
 
 const router = express.Router();
 
 router.get("/", async (req, res) => {
-  const response = await fetch("https://fakestoreapi.com/products?limit=5");
-  const products = await response.json();
-  res.json(products);
+  try {
+    const products = await Product.findAll(); // 🔥 Fetch from your SQLite DB
+    res.json(products);
+  } catch (err) {
+    console.error("Error loading products:", err);
+    res.status(500).json({ message: "Error loading products. Please try again." });
+  }
 });
 
 export default router;
