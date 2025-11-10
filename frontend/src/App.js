@@ -12,11 +12,29 @@ function App() {
   useEffect(() => {
     fetch("/api/products")
       .then((res) => res.json())
-      .then((data) => setProducts(data))
-      .catch((err) => console.error("Error fetching products:", err));
+      .then((data) => {
+        // Replace mock product names with unique ones
+        const updated = data.map((p, index) => {
+          const newNames = [
+            "Vibe Smartwatch",
+            "Vibe Bluetooth Speaker",
+            "Vibe Travel Bottle",
+            "Vibe Hoodie",
+            "Vibe Wireless Mouse",
+            "Vibe Desk Lamp",
+            "Vibe Notebook Set",
+            "Vibe Sunglasses",
+            "Vibe Powerbank",
+            "Vibe Cap"
+          ];
+          return { ...p, name: newNames[index] || p.name };
+        });
+        setProducts(updated);
+      })
+      .catch((err) => alert("⚠️ Error loading products. Please try again."));
   }, []);
 
-  // Add to cart
+  // Add item to cart
   const addToCart = (product) => {
     setCart((prevCart) => {
       const existing = prevCart.find((item) => item.id === product.id);
@@ -29,21 +47,36 @@ function App() {
     });
   };
 
+  // Increase or decrease quantity
+  const updateQty = (productId, change) => {
+    setCart((prevCart) =>
+      prevCart
+        .map((item) =>
+          item.id === productId
+            ? { ...item, qty: Math.max(1, item.qty + change) }
+            : item
+        )
+        .filter((item) => item.qty > 0)
+    );
+  };
+
   // Remove from cart
   const removeFromCart = (productId) => {
     setCart((prevCart) => prevCart.filter((item) => item.id !== productId));
   };
 
   // Calculate total
-  const total = cart.reduce(
-    (sum, item) => sum + item.price * item.qty,
-    0
-  ).toFixed(2);
+  const total = cart
+    .reduce((sum, item) => sum + item.price * item.qty, 0)
+    .toFixed(2);
 
-  // Checkout handler
+  // Checkout
   const handleCheckout = (e) => {
     e.preventDefault();
-    if (!name || !email) return alert("please enter your name and email");
+    if (!name || !email) {
+      alert("Please enter your name and email.");
+      return;
+    }
 
     const checkoutData = {
       name,
@@ -53,21 +86,21 @@ function App() {
       timestamp: new Date().toLocaleString(),
     };
 
-    // Fake API call (mock)
+    // Simulate mock API checkout
     setTimeout(() => {
       setReceipt(checkoutData);
       setCart([]);
       setName("");
       setEmail("");
-    }, 1000);
+    }, 800);
   };
 
   return (
     <div style={{ padding: "20px", fontFamily: "Poppins, sans-serif" }}>
-      <h1 style={{ fontSize: "2rem" }}>🛍️ Vibe Cart</h1>
+      <h1 style={{ fontSize: "2rem" }}>🛍️ Vibe Commerce Store</h1>
 
-      {/* Products Section */}
-      <h2>Products</h2>
+      {/* Product Grid */}
+      <h2>🧢 Available Products</h2>
       <div
         style={{
           display: "grid",
@@ -87,7 +120,7 @@ function App() {
               textAlign: "center",
             }}
           >
-            <h3>{p.name || "Vibe Product"}</h3>
+            <h3>{p.name}</h3>
             <p style={{ fontWeight: "bold" }}>₹{p.price}</p>
             <button
               onClick={() => addToCart(p)}
@@ -108,14 +141,42 @@ function App() {
 
       {/* Cart Section */}
       <div style={{ marginTop: "40px" }}>
-        <h2>🛒 Cart ({cart.length})</h2>
+        <h2>🛒 Your Cart ({cart.length})</h2>
         {cart.length === 0 ? (
-          <p>No items yet.</p>
+          <p>No items added yet.</p>
         ) : (
           <ul>
             {cart.map((item) => (
-              <li key={item.id} style={{ marginBottom: "8px" }}>
-                {item.name} — ₹{item.price} × {item.qty}{" "}
+              <li key={item.id} style={{ marginBottom: "10px" }}>
+                {item.name} — ₹{item.price} × {item.qty}
+                <button
+                  onClick={() => updateQty(item.id, +1)}
+                  style={{
+                    marginLeft: "10px",
+                    background: "green",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "5px",
+                    padding: "3px 8px",
+                    cursor: "pointer",
+                  }}
+                >
+                  +
+                </button>
+                <button
+                  onClick={() => updateQty(item.id, -1)}
+                  style={{
+                    marginLeft: "5px",
+                    background: "#444",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "5px",
+                    padding: "3px 8px",
+                    cursor: "pointer",
+                  }}
+                >
+                  −
+                </button>
                 <button
                   onClick={() => removeFromCart(item.id)}
                   style={{
@@ -137,10 +198,10 @@ function App() {
         <h3>Total: ₹{total}</h3>
       </div>
 
-      {/* Checkout Section */}
+      {/* Checkout Form */}
       {cart.length > 0 && (
         <div style={{ marginTop: "30px" }}>
-          <h2>Checkout</h2>
+          <h2>💳 Checkout</h2>
           <form onSubmit={handleCheckout}>
             <input
               type="text"
