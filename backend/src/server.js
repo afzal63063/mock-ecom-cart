@@ -6,7 +6,14 @@ import cartRoutes from "./routes/cart.js";
 import checkoutRoutes from "./routes/checkout.js";
 
 const app = express();
-app.use(cors());
+
+// ✅ Allow only your Netlify frontend to connect
+app.use(cors({
+  origin: ["https://vibe-cart-nazi.netlify.app", "http://localhost:5173"],
+  methods: ["GET", "POST", "DELETE", "PUT"],
+  credentials: true,
+}));
+
 app.use(express.json());
 
 // ✅ API Routes
@@ -21,6 +28,8 @@ app.get("/", (req, res) => {
 
 // ✅ Database + Server start
 sequelize.sync().then(() => {
-  const PORT = 4000;
-  app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
+  const PORT = process.env.PORT || 4000;
+  app.listen(PORT, "0.0.0.0", () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+  });
 });
